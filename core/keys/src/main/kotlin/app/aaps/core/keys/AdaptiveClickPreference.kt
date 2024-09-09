@@ -29,7 +29,7 @@ class AdaptiveClickPreference(
     init {
         (context.applicationContext as HasAndroidInjector).androidInjector().inject(this)
 
-        stringKey?.let { key = context.getString(it.key) }
+        stringKey?.let { key = it.key }
         summary?.let { setSummary(it) }
         title?.let { this.title = context.getString(it) }
         onPreferenceClickListener?.let { setOnPreferenceClickListener(it) }
@@ -48,11 +48,11 @@ class AdaptiveClickPreference(
             isVisible = false; isEnabled = false
         }
         preferenceKey.dependency?.let {
-            if (!sharedPrefs.getBoolean(context.getString(it.key), false))
+            if (!sharedPrefs.getBoolean(it.key, false))
                 isVisible = false
         }
         preferenceKey.negativeDependency?.let {
-            if (sharedPrefs.getBoolean(context.getString(it.key), false))
+            if (sharedPrefs.getBoolean(it.key, false))
                 isVisible = false
         }
         setDefaultValue(preferenceKey.defaultValue)

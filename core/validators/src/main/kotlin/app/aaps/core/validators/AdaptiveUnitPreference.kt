@@ -36,7 +36,7 @@ class AdaptiveUnitPreference(
     init {
         (context.applicationContext as HasAndroidInjector).androidInjector().inject(this)
 
-        unitKey?.let { key = context.getString(it.key) }
+        unitKey?.let { key = it.key }
         dialogMessage?.let { setDialogMessage(it) }
         title?.let { dialogTitle = context.getString(it) }
         title?.let { this.title = context.getString(it) }
@@ -53,11 +53,11 @@ class AdaptiveUnitPreference(
             isVisible = false; isEnabled = false
         }
         preferenceKey.dependency?.let {
-            if (!sharedPrefs.getBoolean(context.getString(it.key), false))
+            if (!sharedPrefs.getBoolean(it.key, false))
                 isVisible = false
         }
         preferenceKey.negativeDependency?.let {
-            if (sharedPrefs.getBoolean(context.getString(it.key), false))
+            if (sharedPrefs.getBoolean(it.key, false))
                 isVisible = false
         }
         validatorParameters = obtainValidatorParameters(attrs)

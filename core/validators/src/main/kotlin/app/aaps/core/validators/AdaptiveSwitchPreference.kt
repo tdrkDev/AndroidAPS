@@ -29,7 +29,7 @@ class AdaptiveSwitchPreference(
     init {
         (context.applicationContext as HasAndroidInjector).androidInjector().inject(this)
 
-        booleanKey?.let { key = context.getString(it.key) }
+        booleanKey?.let { key = it.key }
         summary?.let { setSummary(it) }
         title?.let { this.title = context.getString(it) }
 
@@ -48,11 +48,11 @@ class AdaptiveSwitchPreference(
             isVisible = false; isEnabled = false
         }
         preferenceKey.dependency?.let {
-            if (!sharedPrefs.getBoolean(context.getString(it.key), false))
+            if (!sharedPrefs.getBoolean(it.key, false))
                 isVisible = false
         }
         preferenceKey.negativeDependency?.let {
-            if (sharedPrefs.getBoolean(context.getString(it.key), false))
+            if (sharedPrefs.getBoolean(it.key, false))
                 isVisible = false
         }
         setDefaultValue(preferenceKey.defaultValue)

@@ -41,6 +41,7 @@ import app.aaps.core.keys.AdaptiveListIntPreference
 import app.aaps.core.keys.AdaptiveListPreference
 import app.aaps.core.keys.BooleanKey
 import app.aaps.core.keys.IntKey
+import app.aaps.core.keys.IntentKey
 import app.aaps.core.keys.Preferences
 import app.aaps.core.keys.StringKey
 import app.aaps.core.ui.dialogs.OKDialog
@@ -166,19 +167,19 @@ class MyPreferenceFragment : PreferenceFragmentCompat(), OnSharedPreferenceChang
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
         key ?: return
         rxBus.send(EventPreferenceChange(key))
-        if (key == rh.gs(StringKey.GeneralLanguage.key)) {
+        if (key == StringKey.GeneralLanguage.key) {
             rxBus.send(EventRebuildTabs(true))
             //recreate() does not update language so better close settings
             activity?.finish()
         }
-        if (key == rh.gs(BooleanKey.OverviewShortTabTitles.key) || key == rh.gs(BooleanKey.GeneralSimpleMode.key)) {
+        if (key == BooleanKey.OverviewShortTabTitles.key || key == BooleanKey.GeneralSimpleMode.key) {
             rxBus.send(EventRebuildTabs())
         }
-        if (key == rh.gs(StringKey.GeneralUnits.key) || key == rh.gs(BooleanKey.GeneralSimpleMode.key) || preferences.getDependingOn(key).isNotEmpty()) {
+        if (key == StringKey.GeneralUnits.key || key == BooleanKey.GeneralSimpleMode.key || preferences.getDependingOn(key).isNotEmpty()) {
             activity?.recreate()
             return
         }
-        if (key == rh.gs(BooleanKey.ApsUseAutosens.key) && preferences.get(BooleanKey.ApsUseAutosens)) {
+        if (key == BooleanKey.ApsUseAutosens.key && preferences.get(BooleanKey.ApsUseAutosens)) {
             activity?.let {
                 OKDialog.show(it, rh.gs(app.aaps.plugins.configuration.R.string.configbuilder_sensitivity), rh.gs(R.string.sensitivity_warning))
             }
@@ -198,10 +199,8 @@ class MyPreferenceFragment : PreferenceFragmentCompat(), OnSharedPreferenceChang
 
     private fun checkForBiometricFallback(key: String) {
         // Biometric protection activated without set master password
-        if ((rh.gs(app.aaps.core.keys.R.string.key_settings_protection) == key ||
-                rh.gs(app.aaps.core.keys.R.string.key_application_protection) == key ||
-                rh.gs(app.aaps.core.keys.R.string.key_bolus_protection) == key) &&
-            sp.getString(app.aaps.core.keys.R.string.key_master_password, "") == "" &&
+        if ((IntKey.ProtectionTypeSettings.key == key || IntKey.ProtectionTypeApplication.key == key || IntKey.ProtectionTypeBolus.key == key) &&
+            preferences.get(StringKey.ProtectionMasterPassword) == "" &&
             sp.getInt(key, NONE.ordinal) == BIOMETRIC.ordinal
         ) {
             activity?.let {
@@ -212,10 +211,10 @@ class MyPreferenceFragment : PreferenceFragmentCompat(), OnSharedPreferenceChang
         }
 
         // Master password erased with activated Biometric protection
-        val isBiometricActivated = sp.getInt(app.aaps.core.keys.R.string.key_settings_protection, NONE.ordinal) == BIOMETRIC.ordinal ||
-            sp.getInt(app.aaps.core.keys.R.string.key_application_protection, NONE.ordinal) == BIOMETRIC.ordinal ||
-            sp.getInt(app.aaps.core.keys.R.string.key_bolus_protection, NONE.ordinal) == BIOMETRIC.ordinal
-        if (rh.gs(app.aaps.core.keys.R.string.key_master_password) == key && sp.getString(key, "") == "" && isBiometricActivated) {
+        val isBiometricActivated = preferences.get(IntKey.ProtectionTypeSettings) == BIOMETRIC.ordinal ||
+            preferences.get(IntKey.ProtectionTypeApplication) == BIOMETRIC.ordinal ||
+            preferences.get(IntKey.ProtectionTypeBolus) == BIOMETRIC.ordinal
+        if (StringKey.ProtectionMasterPassword.key == key && sp.getString(key, "") == "" && isBiometricActivated) {
             activity?.let {
                 val title = rh.gs(app.aaps.core.ui.R.string.unsecure_fallback_biometric)
                 val message = rh.gs(app.aaps.core.ui.R.string.unsecure_fallback_descriotion_biometric)
@@ -282,7 +281,7 @@ class MyPreferenceFragment : PreferenceFragmentCompat(), OnSharedPreferenceChang
         if (pref is ListPreference) {
             pref.setSummary(pref.entry)
             // Preferences
-            if (pref.getKey() == rh.gs(app.aaps.core.keys.R.string.key_settings_protection)) {
+            if (pref.getKey() == IntKey.ProtectionTypeSettings.key) {
                 val pass: Preference? = findPreference(rh.gs(app.aaps.core.keys.R.string.key_settings_password))
                 val usePassword = pref.value == CUSTOM_PASSWORD.ordinal.toString()
                 pass?.let { it.isVisible = usePassword }
@@ -291,7 +290,7 @@ class MyPreferenceFragment : PreferenceFragmentCompat(), OnSharedPreferenceChang
                 pin?.let { it.isVisible = usePin }
             }
             // Application
-            if (pref.getKey() == rh.gs(app.aaps.core.keys.R.string.key_application_protection)) {
+            if (pref.getKey() == IntKey.ProtectionTypeApplication.key) {
                 val pass: Preference? = findPreference(rh.gs(app.aaps.core.keys.R.string.key_application_password))
                 val usePassword = pref.value == CUSTOM_PASSWORD.ordinal.toString()
                 pass?.let { it.isVisible = usePassword }
@@ -300,7 +299,7 @@ class MyPreferenceFragment : PreferenceFragmentCompat(), OnSharedPreferenceChang
                 pin?.let { it.isVisible = usePin }
             }
             // Bolus
-            if (pref.getKey() == rh.gs(app.aaps.core.keys.R.string.key_bolus_protection)) {
+            if (pref.getKey() == IntKey.ProtectionTypeBolus.key) {
                 val pass: Preference? = findPreference(rh.gs(app.aaps.core.keys.R.string.key_bolus_password))
                 val usePassword = pref.value == CUSTOM_PASSWORD.ordinal.toString()
                 pass?.let { it.isVisible = usePassword }
@@ -323,7 +322,7 @@ class MyPreferenceFragment : PreferenceFragmentCompat(), OnSharedPreferenceChang
 
         val hmacPasswords = arrayOf(
             rh.gs(app.aaps.core.keys.R.string.key_bolus_password),
-            rh.gs(app.aaps.core.keys.R.string.key_master_password),
+            StringKey.ProtectionMasterPassword.key,
             rh.gs(app.aaps.core.keys.R.string.key_application_password),
             rh.gs(app.aaps.core.keys.R.string.key_settings_password),
             rh.gs(app.aaps.core.keys.R.string.key_bolus_pin),
@@ -374,12 +373,12 @@ class MyPreferenceFragment : PreferenceFragmentCompat(), OnSharedPreferenceChang
     override fun onPreferenceTreeClick(preference: Preference): Boolean =
         when (preference.key) {
             // NSClient copy settings
-            rh.gs(app.aaps.core.keys.R.string.key_statuslights_copy_ns) -> {
+            IntentKey.OverviewCopySettingsFromNs.key -> {
                 nsSettingStatus.copyStatusLightsNsSettings(context)
                 true
             }
 
-            else                                                        -> super.onPreferenceTreeClick(preference)
+            else                                     -> super.onPreferenceTreeClick(preference)
         }
 
     fun setFilter(filter: String) {
@@ -496,8 +495,8 @@ class MyPreferenceFragment : PreferenceFragmentCompat(), OnSharedPreferenceChang
             addPreference(
                 AdaptiveClickPreference(ctx = context, stringKey = StringKey.ProtectionMasterPassword, title = app.aaps.core.ui.R.string.master_password,
                                         onPreferenceClickListener = {
-                                            passwordCheck.queryPassword(requireContext(), app.aaps.plugins.configuration.R.string.current_master_password, app.aaps.core.keys.R.string.key_master_password, {
-                                                passwordCheck.setPassword(requireContext(), app.aaps.core.ui.R.string.master_password, app.aaps.core.keys.R.string.key_master_password)
+                                            passwordCheck.queryPassword(requireContext(), app.aaps.plugins.configuration.R.string.current_master_password, StringKey.ProtectionMasterPassword.key, {
+                                                passwordCheck.setPassword(requireContext(), app.aaps.core.ui.R.string.master_password, StringKey.ProtectionMasterPassword.key)
                                             })
                                             true
                                         }
@@ -506,47 +505,47 @@ class MyPreferenceFragment : PreferenceFragmentCompat(), OnSharedPreferenceChang
             addPreference(AdaptiveListIntPreference(ctx = context, intKey = IntKey.ProtectionTypeSettings, title = app.aaps.core.ui.R.string.settings_protection, entries = protectionTypeEntries, entryValues = protectionTypeValues))
             addPreference(
                 AdaptiveClickPreference(ctx = context, stringKey = StringKey.ProtectionSettingsPassword, title = app.aaps.core.ui.R.string.settings_password,
-                                         onPreferenceClickListener = {
-                                             passwordCheck.setPassword(requireContext(), app.aaps.core.ui.R.string.settings_password, app.aaps.core.keys.R.string.key_settings_password)
-                                             true
-                                         })
+                                        onPreferenceClickListener = {
+                                            passwordCheck.setPassword(requireContext(), app.aaps.core.ui.R.string.settings_password, app.aaps.core.keys.R.string.key_settings_password)
+                                            true
+                                        })
             )
             addPreference(
                 AdaptiveClickPreference(ctx = context, stringKey = StringKey.ProtectionSettingsPin, title = app.aaps.core.ui.R.string.settings_pin,
-                                         onPreferenceClickListener = {
-                                             passwordCheck.setPassword(requireContext(), app.aaps.core.ui.R.string.settings_pin, app.aaps.core.keys.R.string.key_settings_pin, pinInput = true)
-                                             true
-                                         })
+                                        onPreferenceClickListener = {
+                                            passwordCheck.setPassword(requireContext(), app.aaps.core.ui.R.string.settings_pin, app.aaps.core.keys.R.string.key_settings_pin, pinInput = true)
+                                            true
+                                        })
             )
             addPreference(AdaptiveListIntPreference(ctx = context, intKey = IntKey.ProtectionTypeApplication, title = app.aaps.core.ui.R.string.application_protection, entries = protectionTypeEntries, entryValues = protectionTypeValues))
             addPreference(
                 AdaptiveClickPreference(ctx = context, stringKey = StringKey.ProtectionApplicationPassword, title = app.aaps.core.ui.R.string.application_password,
-                                         onPreferenceClickListener = {
-                                             passwordCheck.setPassword(requireContext(), app.aaps.core.ui.R.string.application_password, app.aaps.core.keys.R.string.key_application_password)
-                                             true
-                                         })
+                                        onPreferenceClickListener = {
+                                            passwordCheck.setPassword(requireContext(), app.aaps.core.ui.R.string.application_password, app.aaps.core.keys.R.string.key_application_password)
+                                            true
+                                        })
             )
             addPreference(
                 AdaptiveClickPreference(ctx = context, stringKey = StringKey.ProtectionApplicationPin, title = app.aaps.core.ui.R.string.application_pin,
-                                         onPreferenceClickListener = {
-                                             passwordCheck.setPassword(requireContext(), app.aaps.core.ui.R.string.application_pin, app.aaps.core.keys.R.string.key_application_pin, pinInput = true)
-                                             true
-                                         })
+                                        onPreferenceClickListener = {
+                                            passwordCheck.setPassword(requireContext(), app.aaps.core.ui.R.string.application_pin, app.aaps.core.keys.R.string.key_application_pin, pinInput = true)
+                                            true
+                                        })
             )
             addPreference(AdaptiveListIntPreference(ctx = context, intKey = IntKey.ProtectionTypeBolus, title = app.aaps.core.ui.R.string.bolus_protection, entries = protectionTypeEntries, entryValues = protectionTypeValues))
             addPreference(
                 AdaptiveClickPreference(ctx = context, stringKey = StringKey.ProtectionBolusPassword, title = app.aaps.core.ui.R.string.bolus_password,
-                                         onPreferenceClickListener = {
-                                             passwordCheck.setPassword(requireContext(), app.aaps.core.ui.R.string.bolus_password, app.aaps.core.keys.R.string.key_bolus_password)
-                                             true
-                                         })
+                                        onPreferenceClickListener = {
+                                            passwordCheck.setPassword(requireContext(), app.aaps.core.ui.R.string.bolus_password, app.aaps.core.keys.R.string.key_bolus_password)
+                                            true
+                                        })
             )
             addPreference(
                 AdaptiveClickPreference(ctx = context, stringKey = StringKey.ProtectionBolusPin, title = app.aaps.core.ui.R.string.bolus_pin,
-                                         onPreferenceClickListener = {
-                                             passwordCheck.setPassword(requireContext(), app.aaps.core.ui.R.string.bolus_pin, app.aaps.core.keys.R.string.key_bolus_pin, pinInput = true)
-                                             true
-                                         })
+                                        onPreferenceClickListener = {
+                                            passwordCheck.setPassword(requireContext(), app.aaps.core.ui.R.string.bolus_pin, app.aaps.core.keys.R.string.key_bolus_pin, pinInput = true)
+                                            true
+                                        })
             )
             addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.ProtectionTimeout, title = app.aaps.core.ui.R.string.protection_timeout_title, summary = app.aaps.core.ui.R.string.protection_timeout_summary))
         }

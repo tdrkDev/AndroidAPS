@@ -37,7 +37,7 @@ class AdaptiveStringPreference(
     init {
         (context.applicationContext as HasAndroidInjector).androidInjector().inject(this)
 
-        stringKey?.let { key = context.getString(it.key) }
+        stringKey?.let { key = it.key }
         dialogMessage?.let { setDialogMessage(it) }
         summary?.let { setSummary(it) }
         title?.let { dialogTitle = context.getString(it) }
@@ -57,11 +57,11 @@ class AdaptiveStringPreference(
             isVisible = false; isEnabled = false
         }
         preferenceKey.dependency?.let {
-            if (!sharedPrefs.getBoolean(context.getString(it.key), false))
+            if (!sharedPrefs.getBoolean(it.key, false))
                 isVisible = false
         }
         preferenceKey.negativeDependency?.let {
-            if (sharedPrefs.getBoolean(context.getString(it.key), false))
+            if (sharedPrefs.getBoolean(it.key, false))
                 isVisible = false
         }
         validatorParameters = validatorParams ?: obtainValidatorParameters(attrs)

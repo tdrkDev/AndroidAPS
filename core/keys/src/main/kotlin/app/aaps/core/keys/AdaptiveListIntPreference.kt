@@ -28,7 +28,7 @@ open class AdaptiveListIntPreference(
     init {
         (context.applicationContext as HasAndroidInjector).androidInjector().inject(this)
 
-        intKey?.let { key = context.getString(it.key) }
+        intKey?.let { key = it.key }
         title?.let { this.title = context.getString(it) }
         dialogMessage?.let { this.dialogMessage = context.getString(it) }
         summary?.let { this.summary = context.getString(it) }
@@ -47,11 +47,11 @@ open class AdaptiveListIntPreference(
             isVisible = false; isEnabled = false
         }
         preferenceKey.dependency?.let {
-            if (!sharedPrefs.getBoolean(context.getString(it.key), false))
+            if (!sharedPrefs.getBoolean(it.key, false))
                 isVisible = false
         }
         preferenceKey.negativeDependency?.let {
-            if (sharedPrefs.getBoolean(context.getString(it.key), false))
+            if (sharedPrefs.getBoolean(it.key, false))
                 isVisible = false
         }
         setDefaultValue(preferenceKey.defaultValue.toString())

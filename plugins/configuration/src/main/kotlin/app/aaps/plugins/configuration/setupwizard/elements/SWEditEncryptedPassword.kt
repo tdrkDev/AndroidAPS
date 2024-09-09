@@ -9,6 +9,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
+import app.aaps.core.keys.StringKey
 import app.aaps.core.objects.crypto.CryptoUtil
 import app.aaps.core.ui.extensions.toVisibility
 import dagger.android.HasAndroidInjector
@@ -26,13 +27,13 @@ class SWEditEncryptedPassword(injector: HasAndroidInjector, private val cryptoUt
 
     override fun generateDialog(layout: LinearLayout) {
         val context = layout.context
-        val isPasswordSet = sp.contains(app.aaps.core.keys.R.string.key_master_password) && sp.getString(app.aaps.core.keys.R.string.key_master_password, "") != ""
+        val isPasswordSet = preferences.contains(StringKey.ProtectionMasterPassword) && preferences.get(StringKey.ProtectionMasterPassword) != ""
 
         button = Button(context)
         button?.setText(app.aaps.core.ui.R.string.unlock_settings)
         button?.setOnClickListener {
             scanForActivity(context)?.let { activity ->
-                passwordCheck.queryPassword(activity, app.aaps.core.ui.R.string.master_password, app.aaps.core.keys.R.string.key_master_password, {
+                passwordCheck.queryPassword(activity, app.aaps.core.ui.R.string.master_password, StringKey.ProtectionMasterPassword.key, {
                     button?.visibility = View.GONE
                     editText?.visibility = View.VISIBLE
                     editText2?.visibility = View.VISIBLE

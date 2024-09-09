@@ -36,7 +36,7 @@ class AdaptiveDoublePreference(
     init {
         (context.applicationContext as HasAndroidInjector).androidInjector().inject(this)
 
-        doubleKey?.let { key = context.getString(it.key) }
+        doubleKey?.let { key = it.key }
         dialogMessage?.let { setDialogMessage(it) }
         title?.let { dialogTitle = context.getString(it) }
         title?.let { this.title = context.getString(it) }
@@ -55,11 +55,11 @@ class AdaptiveDoublePreference(
             isVisible = false; isEnabled = false
         }
         preferenceKey.dependency?.let {
-            if (!sharedPrefs.getBoolean(context.getString(it.key), false))
+            if (!sharedPrefs.getBoolean(it.key, false))
                 isVisible = false
         }
         preferenceKey.negativeDependency?.let {
-            if (sharedPrefs.getBoolean(context.getString(it.key), false))
+            if (sharedPrefs.getBoolean(it.key, false))
                 isVisible = false
         }
         validatorParameters = obtainValidatorParameters(attrs)

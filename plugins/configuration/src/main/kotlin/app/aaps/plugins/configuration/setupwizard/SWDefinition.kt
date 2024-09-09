@@ -220,10 +220,10 @@ class SWDefinition @Inject constructor(
         get() = SWScreen(injector, app.aaps.core.ui.R.string.master_password)
             .skippable(false)
             .add(SWInfoText(injector).label(app.aaps.core.ui.R.string.master_password))
-            .add(SWEditEncryptedPassword(injector, cryptoUtil).preferenceId(app.aaps.core.keys.R.string.key_master_password))
+            .add(SWEditEncryptedPassword(injector, cryptoUtil).preferenceId(StringKey.ProtectionMasterPassword))
             .add(SWBreak(injector))
             .add(SWInfoText(injector).label(R.string.master_password_summary))
-            .validator { !cryptoUtil.checkPassword("", sp.getString(app.aaps.core.keys.R.string.key_master_password, "")) }
+            .validator { !cryptoUtil.checkPassword("", preferences.get(StringKey.ProtectionMasterPassword)) }
 
     private val screenAge
         get() = SWScreen(injector, app.aaps.core.ui.R.string.patient_type)

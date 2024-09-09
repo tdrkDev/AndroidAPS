@@ -27,7 +27,7 @@ class AdaptiveIntentPreference(
     init {
         (context.applicationContext as HasAndroidInjector).androidInjector().inject(this)
 
-        intentKey?.let { key = context.getString(it.key) }
+        intentKey?.let { key = it.key }
         summary?.let { setSummary(it) }
         title?.let { this.title = context.getString(it) }
         this.intent = intent
@@ -44,11 +44,11 @@ class AdaptiveIntentPreference(
             isVisible = false; isEnabled = false
         }
         preferenceKey.dependency?.let {
-            if (!sharedPrefs.getBoolean(context.getString(it.key), false))
+            if (!sharedPrefs.getBoolean(it.key, false))
                 isVisible = false
         }
         preferenceKey.negativeDependency?.let {
-            if (sharedPrefs.getBoolean(context.getString(it.key), false))
+            if (sharedPrefs.getBoolean(it.key, false))
                 isVisible = false
         }
     }

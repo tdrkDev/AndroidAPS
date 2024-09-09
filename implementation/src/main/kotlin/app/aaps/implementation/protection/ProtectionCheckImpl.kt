@@ -7,6 +7,7 @@ import app.aaps.core.interfaces.sharedPreferences.SP
 import app.aaps.core.interfaces.utils.DateUtil
 import app.aaps.core.keys.IntKey
 import app.aaps.core.keys.Preferences
+import app.aaps.core.keys.StringKey
 import dagger.Reusable
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -34,9 +35,9 @@ class ProtectionCheckImpl @Inject constructor(
     )
 
     private val protectionTypeResourceIDs = listOf(
-        app.aaps.core.keys.R.string.key_settings_protection,
-        app.aaps.core.keys.R.string.key_application_protection,
-        app.aaps.core.keys.R.string.key_bolus_protection
+        IntKey.ProtectionTypeSettings.key,
+        IntKey.ProtectionTypeApplication.key,
+        IntKey.ProtectionTypeBolus.key
     )
 
     private val titlePassResourceIDs = listOf(
@@ -58,7 +59,7 @@ class ProtectionCheckImpl @Inject constructor(
         return when (ProtectionCheck.ProtectionType.entries[sp.getInt(protectionTypeResourceIDs[protection.ordinal], ProtectionCheck.ProtectionType.NONE.ordinal)]) {
             ProtectionCheck.ProtectionType.NONE            -> false
             ProtectionCheck.ProtectionType.BIOMETRIC       -> true
-            ProtectionCheck.ProtectionType.MASTER_PASSWORD -> sp.getString(app.aaps.core.keys.R.string.key_master_password, "") != ""
+            ProtectionCheck.ProtectionType.MASTER_PASSWORD -> preferences.get(StringKey.ProtectionMasterPassword) != ""
             ProtectionCheck.ProtectionType.CUSTOM_PASSWORD -> sp.getString(passwordsResourceIDs[protection.ordinal], "") != ""
             ProtectionCheck.ProtectionType.CUSTOM_PIN      -> sp.getString(pinsResourceIDs[protection.ordinal], "") != ""
         }
@@ -99,7 +100,7 @@ class ProtectionCheckImpl @Inject constructor(
                 passwordCheck.queryPassword(
                     activity,
                     app.aaps.core.ui.R.string.master_password,
-                    app.aaps.core.keys.R.string.key_master_password,
+                    StringKey.ProtectionMasterPassword.key,
                     { onOk(protection); ok?.run() },
                     { cancel?.run() },
                     { fail?.run() })

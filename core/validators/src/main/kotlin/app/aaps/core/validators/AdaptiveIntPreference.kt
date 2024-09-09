@@ -39,7 +39,7 @@ class AdaptiveIntPreference(
     init {
         (context.applicationContext as HasAndroidInjector).androidInjector().inject(this)
 
-        intKey?.let { key = context.getString(it.key) }
+        intKey?.let { key = it.key }
         dialogMessage?.let { setDialogMessage(it) }
         summary?.let { setSummary(it) }
         title?.let { dialogTitle = context.getString(it) }
@@ -60,11 +60,11 @@ class AdaptiveIntPreference(
             isVisible = false; isEnabled = false
         }
         preferenceKey.dependency?.let {
-            if (!sharedPrefs.getBoolean(context.getString(it.key), false))
+            if (!sharedPrefs.getBoolean(it.key, false))
                 isVisible = false
         }
         preferenceKey.negativeDependency?.let {
-            if (sharedPrefs.getBoolean(context.getString(it.key), false))
+            if (sharedPrefs.getBoolean(it.key, false))
                 isVisible = false
         }
         validatorParameters = obtainValidatorParameters(attrs)

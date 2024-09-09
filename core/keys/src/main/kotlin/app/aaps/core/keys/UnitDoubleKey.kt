@@ -1,7 +1,7 @@
 package app.aaps.core.keys
 
 enum class UnitDoubleKey(
-    override val key: Int,
+    override val key: String,
     override val defaultValue: Double,
     override val minMgdl: Int,
     override val maxMgdl: Int,

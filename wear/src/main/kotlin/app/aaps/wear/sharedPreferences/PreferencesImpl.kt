@@ -94,12 +94,12 @@ class PreferencesImpl @Inject constructor(
         prefsList
             .flatMap { it.enumConstants!!.asIterable() }
             .filterIsInstance<UnitDoublePreferenceKey>()
-            .any { context.getString(it.key) == key }
+            .any { it.key == key }
 
     override fun get(key: String): PreferenceKey =
         prefsList
             .flatMap { it.enumConstants!!.asIterable() }
-            .find { context.getString(it.key) == key }
+            .find { it.key == key }
             ?: error("Key $key not found")
 
     override fun getDependingOn(key: String): List<PreferenceKey> =
