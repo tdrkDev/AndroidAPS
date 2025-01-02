@@ -79,6 +79,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.floor
 import kotlin.math.ln
+import kotlin.math.min
 
 @Singleton
 open class OpenAPSSMBPlugin @Inject constructor(
@@ -409,6 +410,26 @@ open class OpenAPSSMBPlugin @Inject constructor(
             } else autosensResult.sensResult = "autosens disabled"
         }
 
+        var vsens = dynIsfResult.variableSensitivity
+        if (dynIsfMode && vsens != null && isTempTarget) {
+            val normalTarget = 100
+            if ((preferences.get(BooleanKey.ApsAutoIsfHighTtRaisesSens) && targetBg > normalTarget)
+                || (preferences.get(BooleanKey.ApsAutoIsfLowTtLowersSens) && targetBg < normalTarget)) {
+                // w/ target 100, temp target 110 = .89, 120 = 0.8, 140 = 0.67, 160 = .57, and 200 = .44
+                // e.g.: Sensitivity ratio set to 0.8 based on temp target of 120; Adjusting basal from 1.65 to 1.35; ISF from 58.9 to 73.6
+                //sensitivityRatio = 2/(2+(target_bg-normalTarget)/40);
+                val c = (preferences.get(IntKey.ApsAutoIsfHalfBasalExerciseTarget) - normalTarget).toDouble()
+                if (c * (c + targetBg - normalTarget) > 0.0) {
+                    var sensitivityRatio = c / (c + targetBg - normalTarget)
+                    // limit sensitivityRatio to profile.autosens_max (1.2x by default)
+                    sensitivityRatio = min(sensitivityRatio, preferences.get(DoubleKey.AutosensMax))
+                    sensitivityRatio = Round.roundTo(sensitivityRatio, 0.01)
+                    aapsLogger.debug(LTag.APS, "TT sensitivity ratio: $sensitivityRatio")
+                    vsens /= sensitivityRatio
+                }
+            }
+        }
+
         @Suppress("KotlinConstantConditions")
         val iobArray = iobCobCalculator.calculateIobArrayForSMB(autosensResult, SMBDefaults.exercise_mode, preferences.get(IntKey.ApsAutoIsfHalfBasalExerciseTarget), isTempTarget)
         val mealData = iobCobCalculator.getMealDataWithWaitingForCalculationFinish()
@@ -455,7 +476,7 @@ open class OpenAPSSMBPlugin @Inject constructor(
             temptargetSet = isTempTarget,
             autosens_max = preferences.get(DoubleKey.AutosensMax),
             out_units = if (profileFunction.getUnits() == GlucoseUnit.MMOL) "mmol/L" else "mg/dl",
-            variable_sens = if (dynIsfMode) dynIsfResult.variableSensitivity ?: 0.0 else 0.0,
+            variable_sens = if (dynIsfMode) vsens ?: 0.0 else 0.0,
             insulinDivisor = dynIsfResult.insulinDivisor,
             TDD = dynIsfResult.tdd ?: 0.0
         )
