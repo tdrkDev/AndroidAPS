@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!--Autotune-->
+    <string name="dynisf_use_profile_percentage">Использовать процент профиля</string>
     <string name="dynisf_use_profile_sens">Базироваться на ISF профиля</string>
     <string name="dynisf_use_profile_sens_summary">Рассчитывать Dynamic ISF на базе ISF профиля, не основываясь на TDD.</string>
     <string name="dynisf_bg_cap">Верхняя граница ГК для DynISF</string>

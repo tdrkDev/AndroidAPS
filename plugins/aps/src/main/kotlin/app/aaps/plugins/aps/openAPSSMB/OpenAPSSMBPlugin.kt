@@ -142,7 +142,10 @@ open class OpenAPSSMBPlugin @Inject constructor(
 
     override fun getIsfMgdl(profile: Profile, caller: String): Double? {
         val start = dateUtil.now()
-        val multiplier = (profile as ProfileSealed.EPS).value.originalPercentage / 100.0
+        val multiplier = if (preferences.get(BooleanKey.ApsDynIsfProfilePercentage))
+            (profile as ProfileSealed.EPS).value.originalPercentage / 100.0
+        else
+            1.0
         val sensitivity = calculateVariableIsf(start, profile.getProfileIsfMgdl(), multiplier)
         if (sensitivity.second == null)
             uiInteraction.addNotificationValidTo(
@@ -211,7 +214,7 @@ open class OpenAPSSMBPlugin @Inject constructor(
         if (!preferences.get(BooleanKey.ApsDynIsfUseProfileSens)) {
             val profile = calculateProfileBasedDynIsf(profileSens)
             if (profile != null) {
-                return Pair("PROF", profile)
+                return Pair("PROF", profile * multiplier)
             } else {
                 // The only reason why profile based sensitivity can be null
                 return Pair("GLUC", null)
@@ -443,7 +446,10 @@ open class OpenAPSSMBPlugin @Inject constructor(
         else
             dynIsfResult.variableSensitivity
 
-        val multiplier = (profile as ProfileSealed.EPS).value.originalPercentage / 100.0
+        val multiplier = if (preferences.get(BooleanKey.ApsDynIsfProfilePercentage))
+            (profile as ProfileSealed.EPS).value.originalPercentage / 100.0
+        else
+            1.0
         if (vsens != null) vsens = Round.roundTo(vsens * multiplier, 0.1)
 
         if (dynIsfMode && vsens != null && isTempTarget) {
@@ -644,6 +650,7 @@ open class OpenAPSSMBPlugin @Inject constructor(
             addPreference(AdaptiveDoublePreference(ctx = context, doubleKey = DoubleKey.ApsSmbMaxIob, dialogMessage = R.string.openapssmb_max_iob_summary, title = R.string.openapssmb_max_iob_title))
             addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.ApsUseDynamicSensitivity, summary = R.string.use_dynamic_sensitivity_summary, title = R.string.use_dynamic_sensitivity_title))
             addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.ApsDynIsfUseProfileSens, summary = R.string.dynisf_use_profile_sens_summary, title = R.string.dynisf_use_profile_sens))
+            addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.ApsDynIsfProfilePercentage, title = R.string.dynisf_use_profile_percentage))
             addPreference(AdaptiveSwitchPreference(ctx = context, booleanKey = BooleanKey.ApsUseAutosens, title = R.string.openapsama_use_autosens))
             addPreference(AdaptiveIntPreference(ctx = context, intKey = IntKey.ApsDynIsfAdjustmentFactor, dialogMessage = R.string.dyn_isf_adjust_summary, title = R.string.dyn_isf_adjust_title))
             addPreference(AdaptiveUnitPreference(ctx = context, unitKey = UnitDoubleKey.ApsLgsThreshold, dialogMessage = R.string.lgs_threshold_summary, title = R.string.lgs_threshold_title))
